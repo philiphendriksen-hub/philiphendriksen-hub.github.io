@@ -3,21 +3,650 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Philip Hendriksen - App Developer</title>
+    <title>OVERINFLATED — Tap to Vent. Don't Pop.</title>
+    <meta name="description" content="A brutally simple balloon arcade game. Tap to vent air, thread through obstacles, don't pop. Free on iOS and Android.">
+    <meta name="keywords" content="overinflated, balloon game, arcade game, mobile game, tap game, casual game, addictive game">
+    <meta name="author" content="Philip Hendriksen">
+    
+    <!-- Open Graph / Social -->
+    <meta property="og:title" content="OVERINFLATED — Tap to Vent. Don't Pop.">
+    <meta property="og:description" content="A brutally simple balloon arcade game. How far can you get?">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://philiphendriksen-hub.github.io/">
+    <!-- <meta property="og:image" content="og-image.png"> -->
+    
+    <!-- Favicon (use your app icon) -->
+    <!-- <link rel="icon" type="image/png" href="favicon.png"> -->
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center; background: #f4f4f4; color: #333; }
-        .container { padding: 20px; background: white; border-radius: 10px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        a { color: #007bff; text-decoration: none; margin: 0 10px; }
+        :root {
+            --bg-deep: #0d0d2b;
+            --bg-main: #151538;
+            --bg-card: #1c1c45;
+            --red: #ef4444;
+            --red-bright: #ef445c;
+            --red-glow: rgba(239, 68, 68, 0.3);
+            --yellow: #facc15;
+            --green: #4ade80;
+            --blue-bar: #78a0c8;
+            --text-white: #f0f0f5;
+            --text-gray: #a0a0b8;
+            --text-dim: #6a6a88;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--text-white);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── NOISE TEXTURE OVERLAY ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* ─── HERO ─── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Radial glow behind balloon */
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.08) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -55%);
+            pointer-events: none;
+        }
+
+        .hero-title {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title .over {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: clamp(4rem, 12vw, 8rem);
+            letter-spacing: -0.02em;
+            line-height: 0.9;
+            display: block;
+            color: var(--text-white);
+        }
+
+        .hero-title .inflated {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: clamp(3.5rem, 11vw, 7.5rem);
+            letter-spacing: -0.02em;
+            line-height: 1;
+            display: block;
+            color: var(--red-bright);
+        }
+
+        /* ─── BALLOON SVG ─── */
+        .balloon-wrapper {
+            position: relative;
+            z-index: 2;
+            margin: 2.5rem 0 1rem;
+        }
+
+        .balloon-svg {
+            width: 140px;
+            height: auto;
+            filter: drop-shadow(0 20px 40px rgba(239, 68, 68, 0.25));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-14px); }
+        }
+
+        /* Inflate pulse */
+        .balloon-svg .balloon-body {
+            animation: pulse-inflate 4s ease-in-out infinite;
+            transform-origin: center 45%;
+        }
+
+        @keyframes pulse-inflate {
+            0%, 100% { transform: scale(1); }
+            35% { transform: scale(1.06); }
+            50% { transform: scale(0.97); }
+            65% { transform: scale(1.02); }
+        }
+
+        .tagline {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(1rem, 3vw, 1.35rem);
+            color: var(--text-gray);
+            letter-spacing: 0.12em;
+            margin-top: 0.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ─── STORE BUTTONS ─── */
+        .store-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .store-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.9rem 1.8rem;
+            border-radius: 14px;
+            text-decoration: none;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1.5px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .store-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent);
+            pointer-events: none;
+        }
+
+        .store-btn.ios {
+            background: var(--text-white);
+            color: #111;
+            border-color: var(--text-white);
+        }
+
+        .store-btn.android {
+            background: transparent;
+            color: var(--text-white);
+            border-color: rgba(255,255,255,0.25);
+        }
+
+        .store-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.2);
+        }
+
+        .store-btn.ios:hover {
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.15);
+        }
+
+        .store-btn svg {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .store-btn .btn-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.2;
+        }
+
+        .store-btn .btn-text small {
+            font-size: 0.65rem;
+            font-weight: 400;
+            opacity: 0.7;
+            letter-spacing: 0.02em;
+        }
+
+        .store-btn .btn-text span {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .coming-soon-note {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ─── SCROLL INDICATOR ─── */
+        .scroll-hint {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-dim);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            animation: fade-bounce 2.5s ease-in-out infinite;
+        }
+
+        .scroll-hint .chevron {
+            width: 20px;
+            height: 20px;
+            border-right: 2px solid var(--text-dim);
+            border-bottom: 2px solid var(--text-dim);
+            transform: rotate(45deg);
+        }
+
+        @keyframes fade-bounce {
+            0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+            50% { opacity: 1; transform: translateX(-50%) translateY(6px); }
+        }
+
+        /* ─── FEATURES SECTION ─── */
+        .features {
+            padding: 6rem 1.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(239, 68, 92, 0.2);
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--red), var(--yellow));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover::after { opacity: 1; }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* ─── HOW TO PLAY SECTION ─── */
+        .how-to-play {
+            padding: 4rem 1.5rem 6rem;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .section-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            color: var(--red-bright);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 3rem;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            text-align: left;
+        }
+
+        .step {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 2.5rem;
+            color: var(--red-bright);
+            line-height: 1;
+            opacity: 0.4;
+            min-width: 50px;
+        }
+
+        .step-content h4 {
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .step-content p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* ─── GAUGE BAR DECORATION ─── */
+        .gauge-divider {
+            max-width: 600px;
+            margin: 0 auto;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-card);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gauge-divider::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 65%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--green), var(--yellow), var(--red));
+            animation: gauge-fill 6s ease-in-out infinite;
+        }
+
+        @keyframes gauge-fill {
+            0%, 100% { width: 25%; }
+            50% { width: 90%; }
+        }
+
+        /* ─── CTA SECTION ─── */
+        .cta-section {
+            padding: 6rem 1.5rem;
+            text-align: center;
+        }
+
+        .cta-section .section-title {
+            margin-bottom: 1rem;
+        }
+
+        .cta-section .tagline {
+            margin-bottom: 2.5rem;
+        }
+
+        /* ─── FOOTER ─── */
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links a {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            text-decoration: none;
+            letter-spacing: 0.05em;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--red-bright); }
+
+        .footer-copy {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .footer-copy .dev-name {
+            color: var(--text-gray);
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 600px) {
+            .store-buttons { flex-direction: column; align-items: center; }
+            .store-btn { width: 260px; justify-content: center; }
+            .step { gap: 1rem; }
+            .step-number { font-size: 2rem; min-width: 40px; }
+        }
+
+        /* ─── ENTRANCE ANIMATIONS ─── */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s ease forwards;
+        }
+
+        .fade-up:nth-child(1) { animation-delay: 0.1s; }
+        .fade-up:nth-child(2) { animation-delay: 0.25s; }
+        .fade-up:nth-child(3) { animation-delay: 0.4s; }
+        .fade-up:nth-child(4) { animation-delay: 0.55s; }
+        .fade-up:nth-child(5) { animation-delay: 0.7s; }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Overinflated</h1>
-        <p>A simple, addictive mobile game by Philip Hendriksen.</p>
-        <p>
-            <a href="privacy.html">Privacy Policy</a> | 
-            <a href="mailto:philip.hendriksen@gmail.com">Contact Support</a>
-        </p>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+    <div class="hero-title fade-up">
+        <span class="over">OVER</span>
+        <span class="inflated">INFLATED</span>
     </div>
+
+    <div class="balloon-wrapper fade-up">
+        <svg class="balloon-svg" viewBox="0 0 120 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="balloonGrad" cx="0.4" cy="0.35" r="0.6">
+                    <stop offset="0%" stop-color="#ff9999"/>
+                    <stop offset="40%" stop-color="#ef4444"/>
+                    <stop offset="100%" stop-color="#c82828"/>
+                </radialGradient>
+            </defs>
+            <ellipse class="balloon-body" cx="60" cy="65" rx="48" ry="55" fill="url(#balloonGrad)"/>
+            <ellipse cx="48" cy="48" rx="14" ry="10" fill="rgba(255,180,180,0.45)" transform="rotate(-15 48 48)"/>
+            <polygon points="60,120 54,133 66,133" fill="#c82828"/>
+            <line x1="60" y1="133" x2="60" y2="170" stroke="#c82828" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+    </div>
+
+    <p class="tagline fade-up">TAP TO VENT. DON'T POP.</p>
+
+    <div class="store-buttons fade-up">
+        <!-- ══ REPLACE # WITH YOUR REAL APP STORE LINKS ══ -->
+        <a href="#" class="store-btn ios" aria-label="Download on the App Store">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            <div class="btn-text">
+                <small>Download on the</small>
+                <span>App Store</span>
+            </div>
+        </a>
+        <a href="#" class="store-btn android" aria-label="Get it on Google Play">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.77c-.36-.17-.59-.52-.59-.92V1.15c0-.4.23-.75.59-.92l11.76 11.77L3.18 23.77zm1.44-1.4L15.73 12 4.62 1.63v20.74zM20.16 10.12l-2.98 1.74-2.72-2.73 2.72-2.72 2.98 1.74c.82.48.82 1.49 0 1.97zm-4.26-.99l-1.71 1.72 1.71 1.71 1.55-.91-1.55-.91v-1.61zM4.89.89l11.27 6.58L13.56 10 4.89.89zm0 22.22L13.56 14l2.6 2.53L4.89 23.11z"/></svg>
+            <div class="btn-text">
+                <small>Get it on</small>
+                <span>Google Play</span>
+            </div>
+        </a>
+    </div>
+
+    <p class="coming-soon-note fade-up">Coming soon — join the waitlist</p>
+
+    <div class="scroll-hint">
+        <span>SCROLL</span>
+        <div class="chevron"></div>
+    </div>
+</section>
+
+<!-- ═══════════ GAUGE DIVIDER ═══════════ -->
+<div class="gauge-divider"></div>
+
+<!-- ═══════════ FEATURES ═══════════ -->
+<section class="features">
+    <div class="features-grid">
+        <div class="feature-card">
+            <span class="feature-icon">🎈</span>
+            <h3>One-Tap Mechanic</h3>
+            <p>Tap to vent air and shrink. Stop tapping and the balloon inflates. Simple to learn, brutal to master.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">📏</span>
+            <h3>Pixel-Perfect Deaths</h3>
+            <p>Every death shows you exactly how close you were. 3 pixels too big? You'll see it. You'll feel it.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">⚡</span>
+            <h3>Instant Retry</h3>
+            <p>Zero loading screens. Die and you're back in under a second. The "one more try" loop is real.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🎨</span>
+            <h3>10 Unlockable Skins</h3>
+            <p>Earn new balloon skins through gameplay. No purchases, no paywalls — just skill.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🏆</span>
+            <h3>Stats & Achievements</h3>
+            <p>Track your high score, total pops, longest streak, and unlock achievements along the way.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🔥</span>
+            <h3>Rising Difficulty</h3>
+            <p>Gaps get tighter. Inflation gets faster. Obstacles stack up. How far can you really go?</p>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════ HOW TO PLAY ═══════════ -->
+<section class="how-to-play">
+    <p class="section-label">How It Works</p>
+    <h2 class="section-title">Three things will kill you.</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">01</div>
+            <div class="step-content">
+                <h4>Pop — You're too big</h4>
+                <p>The balloon inflates on its own. If you don't vent in time, it'll outgrow the gap and hit the pins.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">02</div>
+            <div class="step-content">
+                <h4>Drift — You're too small</h4>
+                <p>Vent too much and the balloon shrinks. It loses momentum, drifts sideways, and clips the wall.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">03</div>
+            <div class="step-content">
+                <h4>Squeeze — Wrong size, wrong gap</h4>
+                <p>Every obstacle has a different gap width. You need the perfect size at the perfect time.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════ GAUGE DIVIDER ═══════════ -->
+<div class="gauge-divider"></div>
+
+<!-- ═══════════ CTA ═══════════ -->
+<section class="cta-section">
+    <p class="section-label">Ready?</p>
+    <h2 class="section-title">Your best score is 0.<br>Change that.</h2>
+    <p class="tagline" style="margin-bottom: 2.5rem;">Free on iOS and Android.</p>
+    <div class="store-buttons" style="margin-top: 0;">
+        <!-- ══ REPLACE # WITH YOUR REAL APP STORE LINKS ══ -->
+        <a href="#" class="store-btn ios">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            <div class="btn-text"><small>Download on the</small><span>App Store</span></div>
+        </a>
+        <a href="#" class="store-btn android">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.77c-.36-.17-.59-.52-.59-.92V1.15c0-.4.23-.75.59-.92l11.76 11.77L3.18 23.77zm1.44-1.4L15.73 12 4.62 1.63v20.74zM20.16 10.12l-2.98 1.74-2.72-2.73 2.72-2.72 2.98 1.74c.82.48.82 1.49 0 1.97zm-4.26-.99l-1.71 1.72 1.71 1.71 1.55-.91-1.55-.91v-1.61zM4.89.89l11.27 6.58L13.56 10 4.89.89zm0 22.22L13.56 14l2.6 2.53L4.89 23.11z"/></svg>
+            <div class="btn-text"><small>Get it on</small><span>Google Play</span></div>
+        </a>
+    </div>
+</section>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer>
+    <nav class="footer-links">
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="mailto:philip.hendriksen@gmail.com">Contact Support</a>
+    </nav>
+    <p class="footer-copy">© 2025 <span class="dev-name">Philip Hendriksen</span>. All rights reserved.</p>
+</footer>
+
 </body>
 </html>
