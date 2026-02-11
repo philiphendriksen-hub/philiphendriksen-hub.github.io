@@ -210,6 +210,32 @@
             box-shadow: 0 8px 30px rgba(255, 255, 255, 0.15);
         }
 
+        .store-btn.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+            cursor: default;
+            position: relative;
+        }
+
+        .store-btn.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .badge {
+            background: var(--red-bright);
+            color: #fff;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            padding: 3px 9px;
+            border-radius: 20px;
+            white-space: nowrap;
+            margin-left: 0.5rem;
+            flex-shrink: 0;
+        }
+
         .store-btn svg {
             width: 22px;
             height: 22px;
@@ -526,23 +552,25 @@
 
     <div class="store-buttons fade-up">
         <!-- ══ REPLACE # WITH YOUR REAL APP STORE LINKS ══ -->
-        <a href="#" class="store-btn ios" aria-label="Download on the App Store">
+        <div class="store-btn ios disabled" aria-label="Coming to App Store tomorrow">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
             <div class="btn-text">
-                <small>Download on the</small>
+                <small>Coming to the</small>
                 <span>App Store</span>
             </div>
-        </a>
-        <a href="#" class="store-btn android" aria-label="Get it on Google Play">
+            <span class="badge">~1 Day</span>
+        </div>
+        <div class="store-btn android disabled" aria-label="Coming to Google Play in 2 weeks">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.77c-.36-.17-.59-.52-.59-.92V1.15c0-.4.23-.75.59-.92l11.76 11.77L3.18 23.77zm1.44-1.4L15.73 12 4.62 1.63v20.74zM20.16 10.12l-2.98 1.74-2.72-2.73 2.72-2.72 2.98 1.74c.82.48.82 1.49 0 1.97zm-4.26-.99l-1.71 1.72 1.71 1.71 1.55-.91-1.55-.91v-1.61zM4.89.89l11.27 6.58L13.56 10 4.89.89zm0 22.22L13.56 14l2.6 2.53L4.89 23.11z"/></svg>
             <div class="btn-text">
-                <small>Get it on</small>
+                <small>Coming to</small>
                 <span>Google Play</span>
             </div>
-        </a>
+            <span class="badge">~2 Weeks</span>
+        </div>
     </div>
 
-    <p class="coming-soon-note fade-up">Coming soon — join the waitlist</p>
+    <p class="coming-soon-note fade-up">Almost here — iOS drops tomorrow</p>
 
     <div class="scroll-hint">
         <span>SCROLL</span>
@@ -621,17 +649,19 @@
 <section class="cta-section">
     <p class="section-label">Ready?</p>
     <h2 class="section-title">Your best score is 0.<br>Change that.</h2>
-    <p class="tagline" style="margin-bottom: 2.5rem;">Free on iOS and Android.</p>
+    <p class="tagline" style="margin-bottom: 2.5rem;">Free on iOS (tomorrow) and Android (2 weeks).</p>
     <div class="store-buttons" style="margin-top: 0;">
         <!-- ══ REPLACE # WITH YOUR REAL APP STORE LINKS ══ -->
-        <a href="#" class="store-btn ios">
+        <div class="store-btn ios disabled">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-            <div class="btn-text"><small>Download on the</small><span>App Store</span></div>
-        </a>
-        <a href="#" class="store-btn android">
+            <div class="btn-text"><small>Coming to the</small><span>App Store</span></div>
+            <span class="badge">~1 Day</span>
+        </div>
+        <div class="store-btn android disabled">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.77c-.36-.17-.59-.52-.59-.92V1.15c0-.4.23-.75.59-.92l11.76 11.77L3.18 23.77zm1.44-1.4L15.73 12 4.62 1.63v20.74zM20.16 10.12l-2.98 1.74-2.72-2.73 2.72-2.72 2.98 1.74c.82.48.82 1.49 0 1.97zm-4.26-.99l-1.71 1.72 1.71 1.71 1.55-.91-1.55-.91v-1.61zM4.89.89l11.27 6.58L13.56 10 4.89.89zm0 22.22L13.56 14l2.6 2.53L4.89 23.11z"/></svg>
-            <div class="btn-text"><small>Get it on</small><span>Google Play</span></div>
-        </a>
+            <div class="btn-text"><small>Coming to</small><span>Google Play</span></div>
+            <span class="badge">~2 Weeks</span>
+        </div>
     </div>
 </section>
 
@@ -641,4 +671,4 @@
         <a href="privacy.html">Privacy Policy</a>
         <a href="/cdn-cgi/l/email-protection#d7a7bfbebbbea7f9bfb2b9b3a5bebca4b2b997b0bab6bebbf9b4b8ba">Contact Support</a>
     </nav>
-    <p class="footer-copy">© 2025 <span class="dev-name">Philip Hendriksen</span>. Al
+    <p class="footer-copy">© 2026 <span class="dev-name">Philip Hendriksen</span>. 
